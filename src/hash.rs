@@ -15,3 +15,39 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 pub use ethereum_types::{H128, H160, H256, H264, H512, H520};
+
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+use ethereum_types_serialize;
+
+macro_rules! impl_serde {
+    ($name: ident, $len: expr) => {
+        impl Serialize for $name {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: Serializer, {
+                let mut slice = [0u8; 2 + 2 * $len];
+                ethereum_types_serialize::serialize(&mut slice, &self.0, serializer)
+            }
+        }
+
+        impl<'de> Deserialize<'de> for $name {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: Deserializer<'de>, {
+                let mut bytes = [0u8; $len];
+                ethereum_types_serialize::deserialize_check_len(
+                    deserializer,
+                    ethereum_types_serialize::ExpectedLen::Exact(&mut bytes),
+                )?;
+                Ok($name(bytes))
+            }
+        }
+    };
+}
+
+construct_hash!(H384, 48);
+construct_hash!(H768, 96);
+
+impl_serde!(H384, 48);
+impl_serde!(H768, 96);

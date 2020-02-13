@@ -16,8 +16,12 @@
 
 mod hash;
 
-pub use crate::hash::{H128, H160, H256, H264, H512, H520};
+pub use crate::hash::{H128, H160, H256, H264, H384, H512, H520, H768};
 pub use ethereum_types::U256;
+#[macro_use]
+extern crate fixed_hash;
+extern crate serde;
+extern crate ethereum_types_serialize;
 
 pub fn h128_from_u128(u: u128) -> H128 {
     H128(u.to_be_bytes())
